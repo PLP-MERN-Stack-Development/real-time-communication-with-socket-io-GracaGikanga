@@ -75,3 +75,34 @@ Your work will be automatically submitted when you push to your GitHub Classroom
 - [React Documentation](https://react.dev/)
 - [Express.js Documentation](https://expressjs.com/)
 - [Building a Chat Application with Socket.io](https://socket.io/get-started/chat) 
+
+### API endpoints
+```
+-UserRoutes.js
+("/api/user")
+
+## GET
+("/api/user")
+## POST
+("/api/user")
+## PUT
+("/api/user/:id")
+## DELETE
+("/api/user/:id")
+
+-ChatRoutes
+("/api/chat")
+
+-MessageRoutes
+("/api/message")
+
+-AuthRoutes
+("/api/auth")
+
+-ChatRoutes
+("/api/chats")
+
+-MessageRoutes
+("/api/messages")
+
+```
