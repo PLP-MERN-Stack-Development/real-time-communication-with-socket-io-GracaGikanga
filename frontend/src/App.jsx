@@ -1,26 +1,55 @@
-import React, { useState } from "react";
+// App.jsx
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/login";
-import Dashboard from "./Pages/Dashboard"; // Your existing chat page
+import Dashboard from "./pages/Dashboard";
+import GlobalChat from "./pages/GlobalChat";
+import Signup from "./pages/Signup";
 
 function App() {
-  // 🚀 Track logged-in user
   const [user, setUser] = useState(null);
 
-  // 🚀 Callback for successful login
-  const handleLoginSuccess = (username) => {
-    setUser(username);
+  // ✅ Load user from localStorage on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
+
+  // ✅ Save user to localStorage whenever it changes
+  const handleLoginSuccess = (userData) => {
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
   };
 
   return (
-    <div>
-      <h1>Socket.io Chat App</h1>
-      {/* 🚀 Show login if no user, otherwise show chat */}
-      {!user ? (
-        <Login onLoginSuccess={handleLoginSuccess} />
-      ) : (
-        <Dashboard username={user} /> // Pass username to chat/dashboard
-      )}
-    </div>
+    <Router>
+      <div style={{ padding: 20 }}>
+        <h1>Socket.io Chat App</h1>
+
+        <Routes>
+          <Route
+            path="/login"
+            element={<Login onLoginSuccess={handleLoginSuccess} />}
+          />
+
+          <Route path="/signup" element={<Signup />} />
+
+          <Route
+            path="/dashboard"
+            element={
+              user ? <Dashboard user={user} /> : <Navigate to="/login" />
+            }
+          />
+
+          <Route
+            path="/globalchat"
+            element={user ? <GlobalChat user={user} /> : <Navigate to="/login" />}
+          />
+
+          <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

@@ -13,23 +13,23 @@ Build a real-time chat application using Socket.io that demonstrates bidirection
 - Establish a basic connection between client and server✅
 
 ### Task 2: Core Chat Functionality
-- Implement user authentication (simple username-based or JWT)
-- Create a global chat room where all users can send and receive messages
-- Display messages with sender's name and timestamp
-- Show typing indicators when a user is composing a message
-- Implement online/offline status for users
+- Implement user authentication (simple username-based or JWT)✅
+- Create a global chat room where all users can send and receive messages✅
+- Display messages with sender's name and timestamp✅
+- Show typing indicators when a user is composing a message✅
+- Implement online/offline status for users✅
 
 ### Task 3: Advanced Chat Features
-- Create private messaging between users
-- Implement multiple chat rooms or channels
-- Add "user is typing" indicator
+- Create private messaging between users✅
+- Implement multiple chat rooms or channels✅
+- Add "user is typing" indicator✅
 - Enable file or image sharing
-- Implement read receipts for messages
-- Add message reactions (like, love, etc.)
+- Implement read receipts for messages✅
+- Add message reactions (like, love, etc.)✅
 
 ### Task 4: Real-Time Notifications
 - Send notifications when a user receives a new message
-- Notify when a user joins or leaves a chat room
+- Notify when a user joins or leaves a chat room✅
 - Display unread message count
 - Implement sound notifications for new messages
 - Add browser notifications (using the Web Notifications API)

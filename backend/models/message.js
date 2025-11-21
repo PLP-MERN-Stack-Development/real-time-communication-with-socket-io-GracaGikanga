@@ -1,4 +1,4 @@
-const mongoose = require ("mongoose");
+const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema({
   senderId: {
@@ -10,23 +10,39 @@ const messageSchema = new mongoose.Schema({
   chatId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "ChatRoom",
-    required: true
+    default: null
   },
 
   text: {
     type: String,
     required: true
   },
+  file: {
+    url: String,
+    filename: String,
+    mimetype: String
+  },
+   read: { 
+    type: Boolean, 
+    default: false },
+  
+   readBy: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    }
+  ],
 
   timestamp: {
     type: Date,
     default: Date.now
   },
+  
+  reactions: {
+  type: [String],
+  default: [],
+}
 
-  read: {
-    type: Boolean,
-    default: false
-  }
 });
 
-export default mongoose.model("Message", messageSchema);
+module.exports = mongoose.models.Message || mongoose.model("Message", messageSchema);

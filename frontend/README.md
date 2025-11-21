@@ -1,18 +1,57 @@
-# React + Vite
+# Real-Time Chat App - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the **frontend** of a real-time chat application built with **React**, **Socket.IO**, and **Vite**.  
+It supports **global chat**, **private messaging**, **typing indicators**, and **message reactions**.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## React Compiler
+- Global chat room for all users
+- Private one-on-one chat
+- Typing indicators for active users
+- Message reactions
+- File attachments (optional)
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+---
 
-Note: This will impact Vite dev & build performances.
+## Tech Stack
 
-## Expanding the ESLint configuration
+- React (functional components + hooks)
+- Socket.IO client
+- Vite for development
+- Axios / Fetch for API requests
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## Getting Started
+
+### 1. Clone the repository
+
+```bash
+git clone <frontend-repo-url>
+cd frontend
+
+
+2. Install dependencies
+npm install
+
+
+3. Environment Variables
+Create a .env file in the root:
+VITE_BACKEND_URL=http://localhost:5000
+
+4. Run the development server
+npm run dev
+
+Project Structure
+frontend/
+├─ src/
+│  ├─ components/     # UI components (ChatBox, MessageList, etc.)
+│  ├─ hooks/          # Custom hooks (useChat)
+│  ├─ pages/          # Pages (Login, Dashboard, Chat)
+│  ├─ socket.js       # Socket.IO client setup
+│  └─ main.jsx        # App entry point
+├─ public/            # Static assets
+├─ package.json
+└─ vite.config.js

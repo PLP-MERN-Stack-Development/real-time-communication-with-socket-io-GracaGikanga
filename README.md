@@ -90,19 +90,87 @@ Your work will be automatically submitted when you push to your GitHub Classroom
 ## DELETE
 ("/api/user/:id")
 
--ChatRoutes
+`````````````````````-ChatRoutes
 ("/api/chat")
 
--MessageRoutes
+# GET all chats by a user
+("/api/chat?userId=<userId>
+")
+
+#Get a single ChatRoom by Id
+("/api/chat/<roomId>")
+
+
+## POST- create a chatRoom
+("/api/chat")
+{
+  "roomType": "group",
+  "roomName": "Project Team",
+  "participants": ["<userId1>", "<userId2>"]
+}
+
+
+##POST -add a message to chat
+("/api/chat/chatId/messages)
+{
+  "messageId": "<messageId>"
+}
+
+
+## PUT
+("/apichat/<roomId>/rename")
+{
+  "newName": "New Chat Name"
+}
+
+##PUT -rename a group chat
+("/api/chat/<roomId>/rename")
+
+{
+  "newName": "New Chat Name"
+}
+
+##PUT -add/Remove Participants
+("/api/chat/<roomId>/participants")
+{
+  "userId": "<newUserId>",
+  "action": "add"
+}
+{
+  "userId": "<userIdToRemove>",
+  "action": "remove"
+}
+
+## DELETE
+("/api/chat/<roomId>")
+
+````````````````````````````````````````````````-MessageRoutes
+##GET
+("/api/message/:chatId")
+JWT TOKEN
+
+##POST
 ("/api/message")
+JWT TOKEN
 
--AuthRoutes
-("/api/auth")
+eg. : {
+  "chatId": "679f3a2b5a34c616b8a66a91",
+  "text": "Hello, this is a test!"
+}
 
--ChatRoutes
-("/api/chats")
 
--MessageRoutes
-("/api/messages")
+##PUT
+-marks as read
+("/api/message/:messageId/read")
 
+eg. :http://localhost:5000/api/messages/67a01253dbd9f0c59c8bd2b0/read
+
+JWT TOKEN
+
+## DELETE A MESSAGE
+("/api/messages/:messageId")
+
+http://localhost:5000/api/messages/67a01253dbd9f0c59c8bd2b0
+
+Bearer JWT Token
 ```

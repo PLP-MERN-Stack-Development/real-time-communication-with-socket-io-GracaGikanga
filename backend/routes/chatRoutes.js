@@ -1,40 +1,38 @@
-const express = require('express');
-const ChatRoom = require('../models/chatRoom');
-const authMiddleware = require ("../middleware/authMiddleware.js");
+const express = require("express");
+const ChatRoom = require("../models/chatRoom");
+const authMiddleware = require("../middleware/authMiddleware");
+
 const router = express.Router();
 
-
-//Get all chats for a user
-router.get("/",authMiddleware, async (req, res) => {
+// Get all chats for a user
+router.get("/", authMiddleware, async (req, res) => {
   try {
-    
-    const userId = req.query.user._Id; // e.g. /api/chat?userId=123
-    const rooms = await ChatRoom.find({
-      participants: userId,
-    })
+    const userId = req.user._id;
+    const rooms = await ChatRoom.find({ participants: userId })
       .populate("participants", "name email")
-      .populate("messages");
-
+      .populate({
+        path: "messages",
+        populate: { path: "senderId", select: "name email" },
+      });
     res.json(rooms);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-
-//GET BY ID or GET a single chat by Id
+// Get a single chat by ID
 router.get("/:roomId", authMiddleware, async (req, res) => {
   try {
     const room = await ChatRoom.findById(req.params.roomId)
       .populate("participants", "name email")
-      .populate("messages");
+      .populate({
+        path: "messages",
+        populate: { path: "senderId", select: "name email" },
+      });
 
-    if (!room) {
-      return res.status(404).json({ error: "Chat room not found" });
-    }
+    if (!room) return res.status(404).json({ error: "Chat room not found" });
 
-    // 🚀 optional: ensure user is participant
-    if (!room.participants.some(p => p._id.equals(req.user._id))) {
+    if (!room.participants.some((p) => p._id.equals(req.user._id))) {
       return res.status(403).json({ error: "You are not a participant" });
     }
 
@@ -44,47 +42,45 @@ router.get("/:roomId", authMiddleware, async (req, res) => {
   }
 });
 
-//POST - add a message to a chat
-router.post("/", authMiddleware, async (req, res) => {
+// Create or get private chat
+router.post("/private", authMiddleware, async (req, res) => {
   try {
-    const { messageId } = req.body;
+    const { userId } = req.body; // frontend should send { userId: recipientId }
+    const myId = req.user._id;
 
-    if (!messageId) {
-      return res.status(400).json({ error: "messageId is required" });
+    if (!userId) return res.status(400).json({ message: "userId required" });
+
+    let chat = await ChatRoom.findOne({
+      roomType: "private",
+      participants: { $all: [myId, userId] },
+    }).populate("participants", "name email");
+
+    if (!chat) {
+      chat = await ChatRoom.create({
+        roomType: "private",
+        participants: [myId, userId],
+      });
+      chat = await ChatRoom.findById(chat._id).populate(
+        "participants",
+        "name email"
+      );
     }
 
-    const updatedRoom = await ChatRoom.findByIdAndUpdate(
-      req.params.roomId,
-      { $push: { messages: messageId } },
-      { new: true }
-    );
-
-    res.json(updatedRoom);
+    res.json(chat);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: "Server error", err });
   }
 });
 
-//POST create a chat room
+// Create group chat
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const { roomType, roomName, participants } = req.body;
-
-    if (!roomType || !participants || participants.length === 0) {
+    if (!roomType || !participants || participants.length === 0)
       return res.status(400).json({ error: "Missing required fields" });
-    }
-    // 🚀 Add current user automatically if not included
+
     if (!participants.includes(req.user._id.toString())) {
       participants.push(req.user._id);
-    }
-
-    // Prevent duplicate private chat
-    if (roomType === "private" && participants.length === 2) {
-      const existing = await ChatRoom.findOne({
-        roomType: "private",
-        participants: { $all: participants, $size: 2 },
-      });
-      if (existing) return res.json(existing);
     }
 
     const newRoom = await ChatRoom.create({
@@ -93,81 +89,15 @@ router.post("/", authMiddleware, async (req, res) => {
       participants,
     });
 
-    res.status(201).json(newRoom);
+    const populatedRoom = await ChatRoom.findById(newRoom._id).populate(
+      "participants",
+      "name email"
+    );
+
+    res.status(201).json(populatedRoom);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-
-//PUT -rename a group chat
-router.put("/:roomId/rename", authMiddleware, async (req, res) => {
-  try {
-    const { newName } = req.body;
-    if (!newName) return res.status(400).json({ error: "newName is required" });
-
-    const room = await ChatRoom.findById(req.params.roomId);
-
-    // 🚀 check if user is participant
-    if (!room.participants.some(p => p.equals(req.user._id))) {
-      return res.status(403).json({ error: "You are not a participant" });
-    }
-
-    room.roomName = newName;
-    await room.save();
-
-    res.json(room);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-
-//PUT -add or remove participants of a group
-router.put("/:roomId/participants", authMiddleware, async (req, res) => {
-  try {
-    const { userId, action } = req.body;
-    if (!userId || !action) return res.status(400).json({ error: "userId and action are required" });
-
-    const room = await ChatRoom.findById(req.params.roomId);
-
-    // 🚀 check if user making request is participant
-    if (!room.participants.some(p => p.equals(req.user._id))) {
-      return res.status(403).json({ error: "You are not a participant" });
-    }
-
-    if (action === "add") {
-      if (!room.participants.includes(userId)) room.participants.push(userId);
-    } else if (action === "remove") {
-      room.participants = room.participants.filter(p => p.toString() !== userId);
-    } else {
-      return res.status(400).json({ error: "action must be add or remove" });
-    }
-
-    await room.save();
-    res.json(room);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-
-//DELETE a chat room
-router.delete("/:roomId", authMiddleware, async (req, res) => {
-  try {
-    const room = await ChatRoom.findById(req.params.roomId);
-
-    // 🚀 check if user is participant
-    if (!room.participants.some(p => p.equals(req.user._id))) {
-      return res.status(403).json({ error: "You are not a participant" });
-    }
-
-    await ChatRoom.findByIdAndDelete(req.params.roomId);
-    res.json({ message: "Chat room deleted" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-
-export default router;
+module.exports = router;

@@ -32,4 +32,7 @@ const chatRoomSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("ChatRoom", chatRoomSchema);
+
+module.exports = mongoose.models.ChatRoom || mongoose.model("ChatRoom", chatRoomSchema);
+
+

@@ -1,46 +1,42 @@
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-export default function Login({ onLoginSuccess }) { // 🚀 Accept a prop to notify parent on successful login
-  const [username, setUsername] = useState("");
+export default function Login({ onLoginSuccess }) {
+  const [email, setEmail] = useState(""); 
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
-  // 🚀 Function to handle login
   const handleLogin = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/login", {
-        username,
-        password,
-      });
+      const res = await axios.post("http://localhost:5000/api/auth/login", { email, password });
 
       if (res.data.success) {
-        setMessage("Login successful! Welcome " + res.data.username);
-        // 🚀 Call parent function to notify chat component
-        onLoginSuccess(res.data.username);
-      }
+        const loggedInUser = { _id: res.data.user._id, name: res.data.user.name };
+        const token = res.data.token;
+
+        localStorage.setItem("user", JSON.stringify(loggedInUser));
+        localStorage.setItem("token", token);
+        onLoginSuccess(loggedInUser, token);
+        navigate("/dashboard");
+      } else setMessage("Login failed: Invalid credentials");
     } catch (err) {
+      console.error(err);
       setMessage("Login failed: Invalid credentials");
     }
   };
 
   return (
-    <div>
-      <h2>Login</h2>
-      <input
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <input
-        placeholder="Password"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      {/* 🚀 Login button */}
-      <button onClick={handleLogin}>Login</button>
-      <p>{message}</p>
+    <div className="min-h-screen bg-[#233D4D] flex items-center justify-center">
+      <div className="p-12 w-100 mx-auto bg-[#722f37] rounded-md">
+        <h2 className="font-bold text-lg mb-5">Login</h2>
+        <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} className="block mb-2 p-2 bg-white rounded-md w-80"/>
+        <input type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} className="block mb-2 p-2 bg-white rounded-md w-80"/>
+        <button onClick={handleLogin} className="px-4 py-2 bg-black text-white rounded-md w-80">Login</button>
+        <p className="mt-2">Don't have an account? <span className="text-green-200 cursor-pointer font-bold" onClick={()=>navigate("/signup")}>Sign up</span></p>
+        {message && <p className="mt-2 text-red-300">{message}</p>}
+      </div>
     </div>
   );
 }
